@@ -1,0 +1,71 @@
+name: Render OpenSCAD Preview
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - '**.scad'
+  pull_request:
+    paths:
+      - '**.scad'
+  workflow_dispatch:
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install OpenSCAD
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y openscad xvfb
+
+      - name: Render isometric preview (PNG)
+        run: |
+          mkdir -p renders
+          xvfb-run openscad \
+            --render \
+            --colorscheme "Tomorrow Night" \
+            --camera 15,-10,20,55,0,35,60 \
+            --imgsize 1920,1080 \
+            -o renders/preview.png \
+            building.scad
+          echo "Render complete: renders/preview.png"
+
+      - name: Render top-down floor plan view (PNG)
+        run: |
+          xvfb-run openscad \
+            --render \
+            --colorscheme "Tomorrow Night" \
+            --camera 5,5,40,0,0,0,0 \
+            --imgsize 1920,1080 \
+            -o renders/floorplan.png \
+            building.scad
+          echo "Floor plan render complete"
+
+      - name: Export STL
+        run: |
+          xvfb-run openscad \
+            --render \
+            -o renders/building.stl \
+            building.scad
+          echo "STL export complete"
+
+      - name: Upload render artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: building-renders
+          path: renders/
+          retention-days: 30
+
+      - name: Commit renders to repository
+        if: github.event_name == 'push'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add renders/
+          git diff --cached --quiet || git commit -m "ci: auto-render preview from $(git rev-parse --short HEAD)"
+          git push
