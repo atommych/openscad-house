@@ -41,10 +41,9 @@ module wall_with_opening(x, y, w, d, h, axis, pos, open_w, open_h, oz=0) {
 // ============================================================
 module room_label(txt, x, y, z) {
     translate([x, y, z])
-        rotate([90, 0, 0])
-            linear_extrude(height=0.02)
-                text(txt, size=label_size, halign="center", valign="center",
-                     font="Liberation Sans:style=Bold");
+        linear_extrude(height=0.02)
+            text(txt, size=label_size, halign="center", valign="center",
+                 font="Liberation Sans:style=Bold");
 }
 
 // ============================================================
@@ -203,10 +202,10 @@ module first_floor() {
 
     // --- Labels ---
     color("MidnightBlue") {
-        room_label("Quarto",    2.3, 9.2, label_z);
-        room_label("4.60×3.40", 2.3, 8.7, label_z);
-        room_label("Cozinha",   7.3, 9.2, label_z);
-        room_label("4.00×3.40", 7.3, 8.7, label_z);
+        room_label("Cozinha",   2.3, 9.2, label_z);
+        room_label("4.00×3.40", 2.3, 8.7, label_z);
+        room_label("Quarto",    7.3, 9.2, label_z);
+        room_label("4.60×3.40", 7.3, 8.7, label_z);
         room_label("Quarto",    2.3, 6.1, label_z);
         room_label("4.60×3.20", 2.3, 5.6, label_z);
         room_label("Casa de Banho", 5.7, 5.8, label_z);
@@ -238,26 +237,36 @@ module garage() {
                     cube([garage_door_w, wall_thickness + 0.02, garage_door_h]);
             }
 
-            // Terraço slab (roof of garage)
+            // Terraço slab — spans garage + arrumos continuously
             translate([0, 0, wall_height])
-                cube([garage_w, garage_d, floor_slab]);
+                cube([garage_w, garage_d + arrumos_d, floor_slab]);
 
-            // Floor slab
+            // Floor slab (garage only)
             translate([0, 0, -floor_slab])
                 cube([garage_w, garage_d, floor_slab]);
+
+            // --- Arrumos (storage room behind garage) ---
+            // Left wall continuation
+            wall_box(0, garage_d, wall_thickness, arrumos_d, wall_height);
+            // Right wall continuation
+            wall_box(garage_w - wall_thickness, garage_d, wall_thickness, arrumos_d, wall_height);
+            // Back wall
+            wall_box(0, garage_d + arrumos_d - wall_thickness, garage_w, wall_thickness, wall_height);
+            // Floor slab
+            translate([0, garage_d, -floor_slab])
+                cube([garage_w, arrumos_d, floor_slab]);
         }
 
-        // Labels
+        // Labels — above the Terraço slab for top-down readability
         color("ForestGreen") {
-            room_label("GARAGEM", garage_w/2, garage_d/2, label_z);
-            room_label("5.50×4.50", garage_w/2, garage_d/2 - 0.5, label_z);
+            room_label("GARAGEM",   garage_w/2, garage_d/2 + 0.4,  wall_height + floor_slab + 0.05);
+            room_label("5.50×4.50", garage_w/2, garage_d/2 - 0.1,  wall_height + floor_slab + 0.05);
+        }
+        color("Peru") {
+            room_label("ARRUMOS",   garage_w/2, garage_d + arrumos_d/2 + 0.2, wall_height + floor_slab + 0.05);
         }
         color("DarkGreen") {
-            translate([garage_w/2, garage_d/2, wall_height + floor_slab + 0.05])
-                rotate([90, 0, 0])
-                    linear_extrude(height=0.02)
-                        text("TERRAÇO", size=label_size * 1.1, halign="center",
-                             valign="center", font="Liberation Sans:style=Bold");
+            room_label("TERRAÇO",   garage_w/2, (garage_d + arrumos_d)/2 - 0.3, wall_height + floor_slab + 0.4);
         }
     }
 }

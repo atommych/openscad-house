@@ -13,10 +13,11 @@ building_w = 10.0;       // [m] width  (X axis)
 building_d = 11.0;       // [m] depth  (Y axis)
 
 // --- Garage footprint ---
-garage_w = 5.5;          // [m]
-garage_d = 4.5;          // [m]
-garage_offset_x = -(garage_w + 0.5);   // left of main building
-garage_offset_y = 3.0;                 // aligned toward rear
+garage_w   = 5.5;        // [m]
+garage_d   = 4.5;        // [m]
+arrumos_d  = 3.0;        // [m] storage room depth behind garage
+garage_offset_x = building_w + 1.2;  // right of house + staircase (1.0 wide + 0.2 gap)
+garage_offset_y = 0.0;               // front-aligned with main building
 
 // --- Openings ---
 door_w  = 0.9;           // [m] standard interior door width
@@ -34,8 +35,8 @@ stair_w       = 1.0;     // [m] stair flight width
 stair_run     = 0.27;    // [m] tread depth (horizontal run per step)
 stair_rise    = 0.175;   // [m] riser height per step
 stair_steps   = 16;      // number of steps to reach wall_height
-stair_x       = 4.8;     // [m] X position in building
-stair_y       = 3.5;     // [m] Y position in building
+stair_x       = building_w + 0.1;  // [m] outside right wall, between house and garage
+stair_y       = 0.1;               // [m] aligned with front of building
 
 // --- Labels ---
 label_size = 0.35;       // [m] room label font size
