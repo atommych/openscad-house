@@ -2,7 +2,7 @@
 // Building Model: Two-storey mixed-use building, Portugal
 // Ground Floor (RC): Café Snack-Bar + Sala de Jantar + Service Area
 // First Floor (Andar): Sala + Kitchen + 3 Bedrooms + Bathroom
-// Garage: Separate structure to the left with Terraço above
+// Garage: Separate structure to the right with Terraço above
 // ============================================================
 // Scale: 1 unit = 1 metre
 // All parameters live in variables.scad
@@ -78,7 +78,7 @@ module ground_floor() {
         // Front wall — main entrance door (centre) + 2 windows
         difference() {
             union() {
-                wall_box(0, 0, building_w, wall_thickness, wall_height);
+                wall_box(0, 0, building_w, wall_thickness, gf_wall_height);
             }
             // Main entrance door (centred left half)
             translate([2.2, -0.01, 0])
@@ -95,34 +95,39 @@ module ground_floor() {
         }
 
         // Back wall
-        wall_box(0, building_d - wall_thickness, building_w, wall_thickness, wall_height);
+        wall_box(0, building_d - wall_thickness, building_w, wall_thickness, gf_wall_height);
 
         // Left wall — window
         difference() {
-            wall_box(0, 0, wall_thickness, building_d, wall_height);
+            wall_box(0, 0, wall_thickness, building_d, gf_wall_height);
             translate([-0.01, 4.0, window_sill])
                 cube([wall_thickness + 0.02, window_w, window_h]);
         }
 
         // Right wall — window
         difference() {
-            wall_box(building_w - wall_thickness, 0, wall_thickness, building_d, wall_height);
+            wall_box(building_w - wall_thickness, 0, wall_thickness, building_d, gf_wall_height);
             translate([building_w - wall_thickness - 0.01, 3.5, window_sill])
                 cube([wall_thickness + 0.02, window_w, window_h]);
         }
 
-        // --- Interior dividing wall: Café | Sala de Jantar ---
-        wall_with_opening(gf_div_x, 0, wall_thickness, building_d * 0.65,
-                          wall_height, "y", 1.5, door_w, door_h);
+        // --- Horizontal divider: Café+Bar (front) | Sala de Jantar+service (rear) ---
+        wall_with_opening(0, gf_front_y, building_w, wall_thickness,
+                          gf_wall_height, "x", 3.0, door_w, door_h);
 
-        // --- Service area rear partition ---
-        wall_with_opening(0, gf_rear_y, building_w * 0.55, wall_thickness,
-                          wall_height, "x", 1.5, door_w, door_h);
+        // --- Vertical divider: Café (left) | Bar (right) — front zone only ---
+        wall_with_opening(gf_bar_x, 0, wall_thickness, gf_front_y,
+                          gf_wall_height, "y", 3.3, door_w, door_h);
 
-        // --- Bathroom block walls ---
-        wall_box(gf_wc_x, gf_wc_y, wall_thickness, building_d - gf_wc_y, wall_height);
+        // --- Sala de Jantar right wall (rear zone) ---
+        wall_with_opening(gf_sala_x, gf_front_y, wall_thickness,
+                          building_d - gf_front_y - wall_thickness,
+                          gf_wall_height, "y", 2.0, door_w, door_h);
+
+        // --- WC block walls (rear-right zone) ---
+        wall_box(gf_wc_x, gf_front_y, wall_thickness, building_d - gf_front_y, gf_wall_height);
         wall_box(gf_wc_x, gf_wc_sep, building_w - gf_wc_x - wall_thickness,
-                 wall_thickness, wall_height);
+                 wall_thickness, gf_wall_height);
 
         // --- Floor slab ---
         translate([0, 0, -floor_slab]) cube([building_w, building_d, floor_slab]);
@@ -130,15 +135,14 @@ module ground_floor() {
 
     // --- Labels ---
     color("SaddleBrown") {
-        room_label("Café Snack-Bar", 2.7, building_d * 0.35, label_z);
-        room_label("50 m²",          2.7, building_d * 0.35 - 0.5, label_z);
-        room_label("Sala de Jantar", 6.7, 3.0, label_z);
-        room_label("27 m²",          6.7, 2.5, label_z);
-        room_label("Bar",    3.5, 9.0, label_z);
-        room_label("9.4 m²", 3.5, 8.5, label_z);
-        room_label("Copa",   1.2, 9.0, label_z);
-        room_label("4.5 m²", 1.2, 8.5, label_z);
-        room_label("WC",     8.5, 6.5, label_z);
+        room_label("Café Snack-Bar", 3.7, 3.3, label_z);
+        room_label("50 m²",          3.7, 2.8, label_z);
+        room_label("Bar",   9.2, 1.4, label_z);
+        room_label("9.7 m²", 9.2, 0.9, label_z);
+        room_label("Sala de Jantar", 3.0, 8.8, label_z);
+        room_label("27 m²",          3.0, 8.3, label_z);
+        room_label("Copa",   7.0, 8.8, label_z);
+        room_label("WC",     9.2, 8.0, label_z);
     }
 }
 
@@ -181,18 +185,21 @@ module first_floor() {
         wall_with_opening(ff_spine_x, 0, wall_thickness, building_d,
                           wall_height, "y", 2.2, door_w, door_h);
 
-        // --- Top band / middle band partition ---
-        wall_with_opening(0, ff_top_y, building_w, wall_thickness,
-                          wall_height, "x", ff_spine_x + 1.5, door_w, door_h);
+        // --- Quarto 1 | Quarto 2 partition (left side only) ---
+        wall_with_opening(0, ff_top_y, ff_spine_x + wall_thickness, wall_thickness,
+                          wall_height, "x", 2.3, door_w, door_h);
 
-        // --- Middle band / lower band partition ---
-        wall_with_opening(0, ff_mid_y, building_w, wall_thickness,
-                          wall_height, "x", ff_spine_x + 1.5, door_w, door_h);
+        // --- Sala | Quarto 1 partition (left side only) ---
+        wall_with_opening(0, ff_mid_y, ff_spine_x + wall_thickness, wall_thickness,
+                          wall_height, "x", 2.3, door_w, door_h);
 
-        // --- Bathroom / stairwell block ---
-        wall_with_opening(ff_bath_x, ff_mid_y, wall_thickness,
-                          ff_top_y - ff_mid_y, wall_height,
-                          "y", 1.0, door_w, door_h);
+        // --- Kitchen rear wall (right side) ---
+        wall_box(ff_spine_x, ff_kitch_y, building_w - ff_spine_x, wall_thickness, wall_height);
+
+        // --- Bathroom block (right side, behind kitchen) ---
+        wall_with_opening(ff_bath_x, ff_kitch_y, wall_thickness,
+                          ff_top_y - ff_kitch_y, wall_height,
+                          "y", 1.5, door_w, door_h);
         wall_box(ff_spine_x, ff_bath_y, ff_bath_x - ff_spine_x,
                  wall_thickness, wall_height);
 
@@ -202,17 +209,17 @@ module first_floor() {
 
     // --- Labels ---
     color("MidnightBlue") {
-        room_label("Cozinha",   2.3, 9.2, label_z);
-        room_label("4.00×3.40", 2.3, 8.7, label_z);
-        room_label("Quarto",    7.3, 9.2, label_z);
-        room_label("4.60×3.40", 7.3, 8.7, label_z);
-        room_label("Quarto",    2.3, 6.1, label_z);
-        room_label("4.60×3.20", 2.3, 5.6, label_z);
-        room_label("Casa de Banho", 5.7, 5.8, label_z);
         room_label("Sala",      2.3, 2.2, label_z);
         room_label("4.50×4.30", 2.3, 1.7, label_z);
-        room_label("Quarto",    7.3, 2.2, label_z);
-        room_label("4.20×3.40", 7.3, 1.7, label_z);
+        room_label("Quarto 1",  2.3, 6.0, label_z);
+        room_label("4.60×3.40", 2.3, 5.5, label_z);
+        room_label("Quarto 2",  2.3, 9.3, label_z);
+        room_label("4.60×3.20", 2.3, 8.8, label_z);
+        room_label("Cozinha",   6.5, 1.7, label_z);
+        room_label("4.00×3.40", 6.5, 1.2, label_z);
+        room_label("Quarto 3",  6.0, 5.5, label_z);
+        room_label("4.20×3.40", 6.0, 5.0, label_z);
+        room_label("Casa de Banho", 9.0, 5.5, label_z);
     }
 }
 
@@ -281,8 +288,8 @@ ground_floor();
 // Staircase from RC to Andar
 staircase(base_z=0);
 
-// First floor stacked at wall_height + slab thickness
-translate([0, 0, wall_height + floor_slab])
+// First floor stacked at gf_wall_height + slab thickness
+translate([0, 0, gf_wall_height + floor_slab])
     first_floor();
 
 // Garage (separate, offset left)
